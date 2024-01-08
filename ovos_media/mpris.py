@@ -7,7 +7,6 @@ from dbus_next.constants import BusType
 from dbus_next.message import Message as DbusMessage, MessageType as DbusMessageType
 from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
 from ovos_bus_client.message import Message
-
 from ovos_utils.log import LOG
 from ovos_utils.ocp import TrackState, PlaybackType, PlayerState, LoopState
 

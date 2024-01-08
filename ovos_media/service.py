@@ -8,24 +8,24 @@ from queue import Queue
 from tempfile import gettempdir
 from threading import Thread, Lock
 
-from .player import OCPMediaPlayer
-from .playback import PlaybackThread
-from .transformers import DialogTransformersService
-from .tts import TTSFactory
-from .utils import report_timing, validate_message_context
 from ovos_bus_client import Message, MessageBusClient
 from ovos_bus_client.session import SessionManager
+from ovos_utils.file_utils import resolve_resource_file
+from ovos_utils.log import LOG
+from ovos_utils.metrics import Stopwatch
+from ovos_utils.process_utils import ProcessStatus, StatusCallbackMap
+from ovos_utils.sound import play_audio
 
 from ovos_config.config import Configuration
 from ovos_plugin_manager.audio import get_audio_service_configs
 from ovos_plugin_manager.g2p import get_g2p_lang_configs, get_g2p_supported_langs, get_g2p_module_configs
 from ovos_plugin_manager.tts import TTS
 from ovos_plugin_manager.tts import get_tts_supported_langs, get_tts_lang_configs, get_tts_module_configs
-from ovos_utils.file_utils import resolve_resource_file
-from ovos_utils.log import LOG
-from ovos_utils.metrics import Stopwatch
-from ovos_utils.process_utils import ProcessStatus, StatusCallbackMap
-from ovos_utils.sound import play_audio
+from .playback import PlaybackThread
+from .player import OCPMediaPlayer
+from .transformers import DialogTransformersService
+from .tts import TTSFactory
+from .utils import report_timing, validate_message_context
 
 
 def on_ready():
@@ -247,7 +247,7 @@ class PlaybackService(Thread):
 
     def run(self):
         self.status.set_alive()
-        #if self.ocp.wait_for_load():
+        # if self.ocp.wait_for_load():
         #    if len(self.ocp.service) == 0:
         #        LOG.warning('No audio backends loaded! '
         #                    'Audio playback is not available')

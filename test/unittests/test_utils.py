@@ -12,18 +12,16 @@
 #
 import unittest
 import unittest.mock as mock
-
+from os.path import exists
 from shutil import rmtree
 from threading import Thread
 from time import sleep
 
-from os.path import exists
-
-from ovos_utils.signal import create_signal, check_for_signal
-from ovos_utils.file_utils import get_temp_path
 from ovos_audio.utils import wait_while_speaking, is_speaking, stop_speaking
-"""Tests for public audio service utils."""
+from ovos_utils.file_utils import get_temp_path
+from ovos_utils.signal import create_signal, check_for_signal
 
+"""Tests for public audio service utils."""
 
 done_waiting = False
 
@@ -63,7 +61,7 @@ class TestInterface(unittest.TestCase):
         mock_is_speaking.return_value = True
         stop_speaking()
         mock_send.assert_called()
-        #mock_send.assert_called_with('mycroft.audio.speech.stop')
+        # mock_send.assert_called_with('mycroft.audio.speech.stop')
 
     @mock.patch('ovos_media.utils.is_speaking')
     @mock.patch('ovos_media.utils.send')

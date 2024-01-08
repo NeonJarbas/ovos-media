@@ -1,9 +1,10 @@
 from ovos_bus_client.message import Message
+from ovos_utils.log import LOG
 
 from ovos_config.config import Configuration
-from ovos_plugin_manager.templates.media import RemoteAudioBackend
-from ovos_utils.log import LOG
-from .base import BaseMediaService
+from ovos_media.media_backends.base import BaseMediaService
+from ovos_plugin_manager.ocp import find_ocp_audio_plugins
+from ovos_plugin_manager.templates.media import RemoteAudioPlayerBackend
 
 
 class AudioService(BaseMediaService):
@@ -17,23 +18,17 @@ class AudioService(BaseMediaService):
             Args:
                 bus: Mycroft messagebus
         """
-        config = config or Configuration().get("Audio") or {}
+        config = config or Configuration().get("media") or {}
         super().__init__(bus, config, autoload, validate_source)
 
     def _get_preferred_audio_backend(self):
         """
         Check configuration and available backends to select a preferred backend
 
-        NOTE - the bus api tells us what backends are loaded,however it does not
-        provide "type", so we need to get that from config, we still hit the
-        messagebus to account for loading failures, even if config claims
-        backend is enabled it might not load
         """
-        cfg = self.config["backends"]
-        available = [k for k in self.available_backends().keys()
-                     if cfg[k].get("type", "") != "ovos_common_play"]
+        available = []
         preferred = self.config.get("preferred_audio_services") or \
-                    ["vlc", "mplayer", "simple"]
+                    ["vlc", "mplayer", "cli"]
         for b in preferred:
             if b in available:
                 return b
@@ -46,22 +41,19 @@ class AudioService(BaseMediaService):
         Sets up the global service, default and registers the event handlers
         for the subsystem.
         """
-        # TODO
-        found_plugins = find_audio_service_plugins()
-        if 'ovos_common_play' in found_plugins:  # old kludge for running under classic mycroft
-            found_plugins.pop('ovos_common_play')
-
         local = []
         remote = []
-        for plugin_name, plugin_module in found_plugins.items():
-            LOG.info(f'Loading audio service plugin: {plugin_name}')
-            s = setup_audio_service(plugin_module, config=self.config, bus=self.bus)
-            if not s:
-                continue
-            if isinstance(s, RemoteAudioBackend):
-                remote += s
-            else:
-                local += s
+
+        plugs = find_ocp_audio_plugins()
+        for plug_name, plug_cfg in self.config.get("audio_players", {}).items():
+            try:
+                service = plugs[plug_name](plug_cfg, self.bus)
+                if isinstance(service, RemoteAudioPlayerBackend):
+                    remote += service
+                else:
+                    local += service
+            except:
+                LOG.exception(f"Failed to load {plug_name}")
 
         # Sort services so local services are checked first
         self.service = local + remote

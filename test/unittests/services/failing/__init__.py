@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_plugin_manager.templates.audio import AudioPlayerBackend
 
 
-class FailingBackend(AudioBackend):
+class FailingBackend(AudioPlayerBackend):
     def __init__(self, config, emitter, name='Failing'):
         raise Exception
 

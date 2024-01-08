@@ -29,7 +29,6 @@ def required(requirements_file):
                 if pkg.strip() and not pkg.startswith("#")]
 
 
-
 def get_version():
     """ Find the version of ovos-core"""
     version = None

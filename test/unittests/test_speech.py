@@ -16,9 +16,10 @@ import unittest.mock as mock
 from queue import Queue
 
 from ovos_audio.service import PlaybackService
-from ovos_config import Configuration
 from ovos_utils.messagebus import Message, FakeBus
 from ovos_utils.process_utils import ProcessState
+
+from ovos_config import Configuration
 
 """Tests for speech dispatch service."""
 
@@ -169,13 +170,13 @@ class TestSpeech(unittest.TestCase):
             speech.handle_queue_audio(msg)
 
         # TODO - fix res path and reenable
-        #f = f"{MYCROFT_ROOT_PATH}/mycroft/res/snd/start_listening.wav"
-        #msg = Message("", {"filename": f})
-        #speech.handle_queue_audio(msg)
-        #data = mock_TTS.queue.get()
-        #self.assertEqual(data[0], "wav")
-        #self.assertEqual(data[1], f)
-        #self.assertEqual(data[-1], False)
+        # f = f"{MYCROFT_ROOT_PATH}/mycroft/res/snd/start_listening.wav"
+        # msg = Message("", {"filename": f})
+        # speech.handle_queue_audio(msg)
+        # data = mock_TTS.queue.get()
+        # self.assertEqual(data[0], "wav")
+        # self.assertEqual(data[1], f)
+        # self.assertEqual(data[-1], False)
 
     @mock.patch('ovos_media.service.report_timing')
     def test_speak(self, mock_timing, tts_factory_mock, config_mock):

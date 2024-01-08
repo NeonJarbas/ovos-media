@@ -4,16 +4,17 @@ from os.path import join, dirname
 from threading import RLock
 from typing import List, Union
 
-from ovos_plugin_manager.ocp import StreamHandler
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_utils.ocp import MediaType, Playlist
 from ovos_utils.ocp import OCP_ID, PlayerState, LoopState, PlaybackType, PlaybackMode, TrackState, MediaState, \
     MediaEntry
-from ovos_workshop import OVOSAbstractApplication
-from .media_backends import AudioService,VideoService,WebService
+
+from ovos_plugin_manager.ocp import load_stream_extractors
 from ovos_plugin_manager.templates.media import MediaBackend
+from ovos_workshop import OVOSAbstractApplication
+from .media_backends import AudioService, VideoService, WebService
 from .mpris import MprisPlayerCtl
 
 
@@ -83,7 +84,7 @@ class NowPlaying(MediaEntry):
 
     def __init__(self, bus, *args, **kwargs):
         self.bus = bus
-        self.stream_xtract = StreamHandler()
+        self.stream_xtract = load_stream_extractors()
         self.position = 0
         super().__init__(*args, **kwargs)
         self.bus.on("ovos.common_play.track.state", self.handle_track_state_change)

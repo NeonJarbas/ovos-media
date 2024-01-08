@@ -3,10 +3,10 @@ import time
 from threading import Lock
 
 from ovos_bus_client.message import Message
-
-from ovos_plugin_manager.templates.media import RemoteAudioBackend, RemoteVideoBackend
 from ovos_utils.log import LOG
 from ovos_utils.process_utils import MonotonicEvent
+
+from ovos_plugin_manager.templates.media import RemoteAudioPlayerBackend, RemoteVideoPlayerBackend
 from ..utils import validate_message_context
 
 
@@ -42,8 +42,8 @@ class BaseMediaService:
             info = {
                 'supported_uris': s.supported_uris(),
                 'default': s == self.default,
-                'remote': isinstance(s, RemoteAudioBackend) or
-                          isinstance(s, RemoteVideoBackend)
+                'remote': isinstance(s, RemoteAudioPlayerBackend) or
+                          isinstance(s, RemoteVideoPlayerBackend)
             }
             data[s.name] = info
         return data

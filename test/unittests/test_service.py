@@ -10,14 +10,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from os.path import dirname, join, abspath
 import unittest
 import unittest.mock as mock
+from os.path import dirname, join, abspath
 
-from ovos_bus_client import Message
 from ovos_audio.audio import AudioService
+from ovos_bus_client import Message
 
 from .services.working import WorkingBackend
+
 """Tests for Audioservice class"""
 
 seek_message = Message('seek', data={'seconds': 5})

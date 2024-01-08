@@ -1,7 +1,6 @@
 import fileinput
 from os.path import join, dirname
 
-
 version_file = join(dirname(dirname(__file__)), "ovos_media", "version.py")
 
 alpha_var_name = "VERSION_ALPHA"

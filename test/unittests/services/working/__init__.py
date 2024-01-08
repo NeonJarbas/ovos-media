@@ -12,10 +12,11 @@
 #
 
 from unittest.mock import Mock
-from ovos_plugin_manager.templates.audio import AudioBackend
+
+from ovos_plugin_manager.templates.audio import AudioPlayerBackend
 
 
-class WorkingBackend(AudioBackend):
+class WorkingBackend(AudioPlayerBackend):
     def __init__(self, config, bus, name='Working'):
         super(WorkingBackend, self).__init__(config, bus)
 

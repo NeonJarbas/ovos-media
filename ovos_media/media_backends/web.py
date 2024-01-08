@@ -1,8 +1,9 @@
 from ovos_bus_client.message import Message
+from ovos_utils.log import LOG
 
 from ovos_config.config import Configuration
-from ovos_plugin_manager.templates.media import RemoteVideoBackend
-from ovos_utils.log import LOG
+from ovos_plugin_manager.ocp import find_ocp_web_plugins
+from ovos_plugin_manager.templates.media import RemoteWebPlayerBackend
 from .base import BaseMediaService
 
 
@@ -45,20 +46,20 @@ class WebService(BaseMediaService):
         Sets up the global service, default and registers the event handlers
         for the subsystem.
         """
-        # TODO
-        found_plugins = find_web_service_plugins()
 
         local = []
         remote = []
-        for plugin_name, plugin_module in found_plugins.items():
-            LOG.info(f'Loading web service plugin: {plugin_name}')
-            s = setup_web_service(plugin_module, config=self.config, bus=self.bus)
-            if not s:
-                continue
-            if isinstance(s, RemoteVideoBackend):
-                remote += s
-            else:
-                local += s
+
+        plugs = find_ocp_web_plugins()
+        for plug_name, plug_cfg in self.config.get("web_players", {}).items():
+            try:
+                service = plugs[plug_name](plug_cfg, self.bus)
+                if isinstance(service, RemoteWebPlayerBackend):
+                    remote += service
+                else:
+                    local += service
+            except:
+                LOG.exception(f"Failed to load {plug_name}")
 
         # Sort services so local services are checked first
         self.service = local + remote

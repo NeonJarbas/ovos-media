@@ -1,8 +1,9 @@
 from ovos_bus_client.message import Message
+from ovos_utils.log import LOG
 
 from ovos_config.config import Configuration
-from ovos_plugin_manager.templates.media import RemoteVideoBackend
-from ovos_utils.log import LOG
+from ovos_plugin_manager.ocp import find_ocp_video_plugins
+from ovos_plugin_manager.templates.media import RemoteVideoPlayerBackend
 from .base import BaseMediaService
 
 
@@ -45,20 +46,19 @@ class VideoService(BaseMediaService):
         Sets up the global service, default and registers the event handlers
         for the subsystem.
         """
-        # TODO
-        found_plugins = find_video_service_plugins()
-
         local = []
         remote = []
-        for plugin_name, plugin_module in found_plugins.items():
-            LOG.info(f'Loading video service plugin: {plugin_name}')
-            s = setup_video_service(plugin_module, config=self.config, bus=self.bus)
-            if not s:
-                continue
-            if isinstance(s, RemoteVideoBackend):
-                remote += s
-            else:
-                local += s
+
+        plugs = find_ocp_video_plugins()
+        for plug_name, plug_cfg in self.config.get("video_players", {}).items():
+            try:
+                service = plugs[plug_name](plug_cfg, self.bus)
+                if isinstance(service, RemoteVideoPlayerBackend):
+                    remote += service
+                else:
+                    local += service
+            except:
+                LOG.exception(f"Failed to load {plug_name}")
 
         # Sort services so local services are checked first
         self.service = local + remote
