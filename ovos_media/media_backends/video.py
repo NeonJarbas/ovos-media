@@ -13,33 +13,6 @@ class VideoService(BaseMediaService):
         to be played.
     """
 
-    def __init__(self, bus, config=None, autoload=True, validate_source=True):
-        """
-            Args:
-                bus: OVOS messagebus
-        """
-        config = config or Configuration().get("Video") or {}
-        super().__init__(bus, config, autoload, validate_source)
-
-    def _get_preferred_video_backend(self):
-        """
-        Check configuration and available backends to select a preferred backend
-
-        NOTE - the bus api tells us what backends are loaded,however it does not
-        provide "type", so we need to get that from config, we still hit the
-        messagebus to account for loading failures, even if config claims
-        backend is enabled it might not load
-        """
-        cfg = self.config["backends"]
-        available = [k for k in self.available_backends().keys()
-                     if cfg[k].get("type", "") != "ovos_common_play"]
-        preferred = self.config.get("preferred_video_services") or ["qt5", "vlc"]
-        for b in preferred:
-            if b in available:
-                return b
-        LOG.error("Preferred video service backend not installed")
-        return "simple"
-
     def load_services(self):
         """Method for loading services.
 
@@ -50,25 +23,23 @@ class VideoService(BaseMediaService):
         remote = []
 
         plugs = find_ocp_video_plugins()
-        for plug_name, plug_cfg in self.config.get("video_players", {}).items():
+        for player_name, plug_cfg in self.config.get("video_players", {}).items():
+            plug_name = plug_cfg["module"]
             try:
                 service = plugs[plug_name](plug_cfg, self.bus)
                 if isinstance(service, RemoteVideoPlayerBackend):
-                    remote += service
+                    remote.append(service)
                 else:
-                    local += service
+                    local.append(service)
             except:
                 LOG.exception(f"Failed to load {plug_name}")
 
         # Sort services so local services are checked first
-        self.service = local + remote
+        self.services = local + remote
 
         # Register end of track callback
-        for s in self.service:
+        for s in self.services:
             s.set_track_start_callback(self.track_start)
-
-        LOG.info('Finding default video backend...')
-        self.default = self._get_preferred_video_backend()
 
         # Setup event handlers
         self.bus.on('ovos.video.service.play', self._play)
@@ -86,8 +57,7 @@ class VideoService(BaseMediaService):
         self.bus.on('ovos.video.service.unduck', self._restore_volume)
 
         self._loaded.set()  # Report services loaded
-
-        return self.service
+        return self.services
 
     def track_start(self, track):
         """Callback method called from the services to indicate start of

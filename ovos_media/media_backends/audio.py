@@ -13,27 +13,6 @@ class AudioService(BaseMediaService):
         to be played.
     """
 
-    def __init__(self, bus, config=None, autoload=True, validate_source=True):
-        """
-            Args:
-                bus: OVOS messagebus
-        """
-        config = config or Configuration().get("media") or {}
-        super().__init__(bus, config, autoload, validate_source)
-
-    def _get_preferred_audio_backend(self):
-        """
-        Check configuration and available backends to select a preferred backend
-
-        """
-        available = []
-        preferred = self.config.get("preferred_audio_services") or \
-                    ["vlc", "mplayer", "cli"]
-        for b in preferred:
-            if b in available:
-                return b
-        LOG.error("Preferred audio service backend not installed")
-        return "simple"
 
     def load_services(self):
         """Method for loading services.
@@ -45,25 +24,23 @@ class AudioService(BaseMediaService):
         remote = []
 
         plugs = find_ocp_audio_plugins()
-        for plug_name, plug_cfg in self.config.get("audio_players", {}).items():
+        for player_name, plug_cfg in self.config.get("audio_players", {}).items():
+            plug_name = plug_cfg["module"]
             try:
                 service = plugs[plug_name](plug_cfg, self.bus)
                 if isinstance(service, RemoteAudioPlayerBackend):
-                    remote += service
+                    remote.append(service)
                 else:
-                    local += service
+                    local.append(service)
             except:
                 LOG.exception(f"Failed to load {plug_name}")
 
         # Sort services so local services are checked first
-        self.service = local + remote
+        self.services = local + remote
 
         # Register end of track callback
-        for s in self.service:
+        for s in self.services:
             s.set_track_start_callback(self.track_start)
-
-        LOG.info('Finding default audio backend...')
-        self.default = self._get_preferred_audio_backend()
 
         # Setup event handlers
         self.bus.on('ovos.audio.service.play', self._play)
@@ -81,7 +58,7 @@ class AudioService(BaseMediaService):
         self.bus.on('ovos.audio.service.unduck', self._restore_volume)
 
         self._loaded.set()  # Report services loaded
-        return self.service
+        return self.services
 
     def track_start(self, track):
         """Callback method called from the services to indicate start of

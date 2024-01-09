@@ -2,26 +2,28 @@ import abc
 import time
 from threading import Lock
 
+from ovos_config.config import Configuration
 from ovos_bus_client.message import Message
 from ovos_utils.log import LOG
 from ovos_utils.process_utils import MonotonicEvent
 
-from ovos_plugin_manager.templates.media import RemoteAudioPlayerBackend, RemoteVideoPlayerBackend
+from ovos_plugin_manager.templates.media import RemoteAudioPlayerBackend, RemoteVideoPlayerBackend, RemoteWebPlayerBackend
 from ..utils import validate_message_context
 
 
 class BaseMediaService:
+
     def __init__(self, bus, config=None, autoload=True, validate_source=True):
         """
             Args:
                 bus: OVOS messagebus
         """
         self.bus = bus
-        self.config = config or {}
+        self.config = config or Configuration().get("media") or {}
         self.service_lock = Lock()
 
         self.default = None
-        self.service = []
+        self.services = []
         self.current = None
         self.play_start_time = 0
         self.volume_is_low = False
@@ -32,17 +34,17 @@ class BaseMediaService:
             self.load_services()
 
     def available_backends(self):
-        """Return available video backends.
+        """Return available media backends.
 
         Returns:
             dict with backend names as keys
         """
         data = {}
-        for s in self.service:
+        for s in self.services:
             info = {
                 'supported_uris': s.supported_uris(),
-                'default': s == self.default,
                 'remote': isinstance(s, RemoteAudioPlayerBackend) or
+                          isinstance(s, RemoteWebPlayerBackend) or
                           isinstance(s, RemoteVideoPlayerBackend)
             }
             data[s.name] = info
@@ -69,7 +71,7 @@ class BaseMediaService:
 
     def _pause(self, message=None):
         """
-            Handler for ovos.video.service.pause. Pauses the current video
+            Handler for ovos.media.service.pause. Pauses the current media
             service.
 
             Args:
@@ -83,7 +85,7 @@ class BaseMediaService:
 
     def _resume(self, message=None):
         """
-            Handler for ovos.video.service.resume.
+            Handler for ovos.media.service.resume.
 
             Args:
                 message: message bus message, not used but required
@@ -95,7 +97,7 @@ class BaseMediaService:
             self.current.ocp_resume()
 
     def _perform_stop(self, message=None):
-        """Stop videoservice if active."""
+        """Stop mediaservice if active."""
         if not self._is_message_for_service(message):
             return
         if self.current:
@@ -155,7 +157,7 @@ class BaseMediaService:
 
     def play(self, uri, preferred_service):
         """
-            play starts playing the video on the preferred service if it
+            play starts playing the media on the preferred service if it
             supports the uri. If not the next best backend is found.
 
             Args:
@@ -178,7 +180,7 @@ class BaseMediaService:
 
         else:  # Check if any other service can play the media
             LOG.debug("Searching the services")
-            for s in self.service:
+            for s in self.services:
                 if uri_type in s.supported_uris():
                     LOG.debug("Service {} supports URI {}".format(s, uri_type))
                     selected_service = s
@@ -200,7 +202,7 @@ class BaseMediaService:
 
     def _play(self, message):
         """
-            Handler for ovos.video.service.play. Starts playback of a
+            Handler for ovos.media.service.play. Starts playback of a
             tracklist. Also  determines if the user requested a special
             service.
 
@@ -213,7 +215,7 @@ class BaseMediaService:
             tracks = message.data['tracks']
 
             # Find if the user wants to use a specific backend
-            for s in self.service:
+            for s in self.services:
                 try:
                     if ('utterance' in message.data and
                             s.name in message.data['utterance']):
@@ -221,7 +223,7 @@ class BaseMediaService:
                         LOG.debug(s.name + ' would be preferred')
                         break
                 except Exception as e:
-                    LOG.error(f"failed to parse video service name: {s}")
+                    LOG.error(f"failed to parse media service name: {s}")
             else:
                 preferred_service = None
 
@@ -255,7 +257,7 @@ class BaseMediaService:
 
     def _get_track_length(self, message):
         """
-        getting the duration of the video in milliseconds
+        getting the duration of the media in milliseconds
         """
         if not self._is_message_for_service(message):
             return
@@ -315,7 +317,7 @@ class BaseMediaService:
             self.current.seek_backward(seconds)
 
     def shutdown(self):
-        for s in self.service:
+        for s in self.services:
             try:
                 LOG.info('shutting down ' + s.name)
                 s.shutdown()

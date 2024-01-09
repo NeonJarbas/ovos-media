@@ -56,7 +56,7 @@ class MediaService(Thread):
         self.status.bind(self.bus)
         self.init_messagebus()
 
-        self.ocp = OCPMediaPlayer(self.bus, validate_source=validate_source)
+        self.ocp = OCPMediaPlayer(self.bus)
 
     def run(self):
         self.status.set_alive()

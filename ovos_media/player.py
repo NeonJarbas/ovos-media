@@ -4,6 +4,8 @@ from os.path import join, dirname
 from threading import RLock
 from typing import List, Union
 
+from ovos_media.media_backends import AudioService, VideoService, WebService
+from ovos_media.mpris import MprisPlayerCtl
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
@@ -14,8 +16,6 @@ from ovos_utils.ocp import OCP_ID, PlayerState, LoopState, PlaybackType, Playbac
 from ovos_plugin_manager.ocp import load_stream_extractors
 from ovos_plugin_manager.templates.media import MediaBackend
 from ovos_workshop import OVOSAbstractApplication
-from ovos_media.media_backends import AudioService, VideoService, WebService
-from ovos_media.mpris import MprisPlayerCtl
 
 
 class OCPMediaCatalog:
@@ -257,9 +257,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     "now playing" is tracked and managed by this interface
     """
 
-    def __init__(self, bus=None, settings=None, lang=None, gui=None,
-                 resources_dir=None, skill_id=OCP_ID, **kwargs):
+    def __init__(self, bus=None, config=None, resources_dir=None, skill_id=OCP_ID, **kwargs):
         resources_dir = resources_dir or join(dirname(__file__), "res")
+        super().__init__(skill_id=skill_id, bus=bus, resources_dir=resources_dir, **kwargs)
+        self.settings.merge(config or {})
 
         self.state: PlayerState = PlayerState.STOPPED
         self.loop_state: LoopState = LoopState.NONE
@@ -275,11 +276,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.video_service = None
         self.web_service = None
         self.current: MediaBackend = None
-
-        super().__init__(skill_id=skill_id, bus=bus, resources_dir=resources_dir,
-                         lang=lang, **kwargs)
-        if settings:
-            self.settings.merge(settings)
 
         self._paused_on_duck = False
 
