@@ -8,7 +8,10 @@ WIP - nothing to see here yet
 
 ## MPRIS integration
 
-![imagem](https://github.com/NeonJarbas/ovos-media/assets/33701864/4ab9bc21-84ec-42ad-9776-2580f2e16db2)
+Integration with MPRIS allows OCP to control external players
+
+![imagem](https://github.com/NeonJarbas/ovos-media/assets/33701864/856c0228-8fc5-4ee6-a19d-4290f2e07258)
+
 
 ## Install
 
