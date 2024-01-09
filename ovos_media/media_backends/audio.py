@@ -16,7 +16,7 @@ class AudioService(BaseMediaService):
     def __init__(self, bus, config=None, autoload=True, validate_source=True):
         """
             Args:
-                bus: Mycroft messagebus
+                bus: OVOS messagebus
         """
         config = config or Configuration().get("media") or {}
         super().__init__(bus, config, autoload, validate_source)

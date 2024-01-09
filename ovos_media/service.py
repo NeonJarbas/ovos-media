@@ -5,7 +5,7 @@ from ovos_utils.log import LOG
 from ovos_utils.process_utils import ProcessStatus, StatusCallbackMap
 
 from ovos_config.config import Configuration
-from .player import OCPMediaPlayer
+from ovos_media.player import OCPMediaPlayer
 
 
 def on_ready():

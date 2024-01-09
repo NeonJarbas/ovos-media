@@ -14,7 +14,7 @@ class BaseMediaService:
     def __init__(self, bus, config=None, autoload=True, validate_source=True):
         """
             Args:
-                bus: Mycroft messagebus
+                bus: OVOS messagebus
         """
         self.bus = bus
         self.config = config or {}
@@ -145,7 +145,7 @@ class BaseMediaService:
             self.volume_is_low = True
 
     def _restore_volume(self, message=None):
-        """Triggered when mycroft is done speaking and restores the volume."""
+        """Triggered when OVOS is done speaking and restores the volume."""
         if not self._is_message_for_service(message):
             return
         if self.current and self.volume_is_low:

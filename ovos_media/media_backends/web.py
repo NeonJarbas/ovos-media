@@ -8,7 +8,7 @@ from .base import BaseMediaService
 
 
 class WebService(BaseMediaService):
-    """ Video Service class.
+    """ Web Service class.
         Handles playback of web and selecting proper backend for the uri
         to be played.
     """
@@ -16,7 +16,7 @@ class WebService(BaseMediaService):
     def __init__(self, bus, config=None, autoload=True, validate_source=True):
         """
             Args:
-                bus: Mycroft messagebus
+                bus: OVOS messagebus
         """
         config = config or Configuration().get("Web") or {}
         super().__init__(bus, config, autoload, validate_source)
