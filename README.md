@@ -2,8 +2,7 @@
 
 WIP - nothing to see here yet
 
-![imagem](https://github.com/OpenVoiceOS/ovos-media/assets/33701864/4feaa291-40b9-4559-9292-036f378fb12c)
-
+![imagem](https://github.com/NeonJarbas/ovos-media/assets/33701864/f295fdd2-c97f-4810-b6a4-0fb604b50b66)
 
 ## Install
 
