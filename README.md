@@ -2,7 +2,13 @@
 
 WIP - nothing to see here yet
 
+## Architecture
+
 ![imagem](https://github.com/NeonJarbas/ovos-media/assets/33701864/f295fdd2-c97f-4810-b6a4-0fb604b50b66)
+
+## MPRIS integration
+
+![imagem](https://github.com/NeonJarbas/ovos-media/assets/33701864/4ab9bc21-84ec-42ad-9776-2580f2e16db2)
 
 ## Install
 
